@@ -5,7 +5,7 @@ mod palette;
 
 fn main() {
 
-    let path = PathBuf::from(env::args().nth(1).expect("No path given"));
+    let path = PathBuf::from(env::args().nth(1).expect("No path given\nExecute program as 'cargo run -- path/to/file.png'"));
     println!("Loading Image {:?}", path.file_name().expect("Image name couldn't be parsed"));
     let image_reader = ImageReader::open(&path).expect("Image couldn't be opened");
     let mut image = image_reader.decode().expect("Image couldn't be decoded");
@@ -35,7 +35,6 @@ fn main() {
 
     let new_path = format!("{}/{}_{}", parent_path, palette.name, file_name);
 
-    
     image.save(&new_path).expect("Couldn't save image");
     println!("Image saved as \"{}\"", new_path);
 }
