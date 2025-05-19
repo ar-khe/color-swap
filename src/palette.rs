@@ -1,5 +1,7 @@
-use image::{Rgb, Rgba};
-
+use std::{sync::Mutex};
+use image::{DynamicImage, GenericImage, GenericImageView, Rgb, Rgba};
+use indicatif::ProgressBar;
+use rayon::iter::{ParallelBridge, ParallelIterator};
 pub struct Palette {
     pub name: &'static str,
     pub colors: Vec<Rgb<u8>>
@@ -31,6 +33,30 @@ fn distance(c1: &Rgba<u8>, c2: &Rgb<u8>)->f64{
     let delta_b = if c2.0[2] > c1.0[2] {((c2.0[2] - c1.0[2]) as u64).pow(2)} else {((c1.0[2] - c2.0[2]) as u64).pow(2)};
 
     f64::sqrt((delta_r+delta_g+delta_b) as f64)
+}
+
+pub fn change_image_palette(palette: &Palette, image: DynamicImage)->Result<DynamicImage, std::sync::PoisonError<DynamicImage>>{
+    let clone = image.clone();
+    let (width, heigth) = image.dimensions();
+    let image_mutex = Mutex::new(image);
+    let progress_bar = ProgressBar::new({width*heigth} as u64);
+
+    clone
+        .pixels()
+        .par_bridge()
+        .for_each(|original_pixel| {
+            let (x, y, pixel) = original_pixel;
+            let modified_pixel = palette.closest_to(&pixel);
+            let mut image= image_mutex.lock();
+            image.as_deref_mut().expect("Image Mutex couldnt be dereferenced").put_pixel(x, y, modified_pixel);
+            progress_bar.inc(1);
+        });
+    progress_bar.finish();
+    let final_image = image_mutex.into_inner();
+    match final_image {
+        Ok(im) => Ok(im),
+        Err(e) => Err(e)
+    }
 }
 
 pub fn gruvbox_palette()->Palette{
