@@ -2,10 +2,14 @@
 Transform an image's color palette.
 
 Run using
-`cargo run -- path/to/file.png`
+`cargo run -- path/to/palette.txt path/to/file.png`
 
-## WIP
-Right now only one palette is available for use, called using `palette::gruvbox_palette()`
+## Palette Files
+palette files are defined by a list of rgb values separated by whitespace, see /palettes for examples.
 
-## TODO
-- Allow user to define a palette as a text file
+Example Palette with RGB colors
+```
+255 0 0
+0 255 0
+0 0 255
+```
